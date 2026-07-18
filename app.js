@@ -56,7 +56,10 @@ loginForm.addEventListener('submit', async event => {
 });
 document.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => signedInUser ? enterDashboard(signedInUser) : openAuth('login')));
 
-document.getElementById('forgot-password').addEventListener('click', async () => {
+document.getElementById('forgot-password').addEventListener('click', async (event) => {
+
+    event.preventDefault();
+
     const email = loginForm.email.value.trim();
 
     if (!email) {
@@ -74,6 +77,7 @@ document.getElementById('forgot-password').addEventListener('click', async () =>
         message.textContent = 'Enviamos um link para redefinir sua senha.';
     }
 });
+E no styles.css, deixe o li
 
 client.auth.getUser().then(async ({ data: { user } }) => {
   if (!user) return;
