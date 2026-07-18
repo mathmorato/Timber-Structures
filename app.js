@@ -56,6 +56,25 @@ loginForm.addEventListener('submit', async event => {
 });
 document.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => signedInUser ? enterDashboard(signedInUser) : openAuth('login')));
 
+document.getElementById('forgot-password').addEventListener('click', async () => {
+    const email = loginForm.email.value.trim();
+
+    if (!email) {
+        message.textContent = 'Informe seu e-mail para recuperar a senha.';
+        return;
+    }
+
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password.html'
+    });
+
+    if (error) {
+        message.textContent = error.message;
+    } else {
+        message.textContent = 'Enviamos um link para redefinir sua senha.';
+    }
+});
+
 client.auth.getUser().then(async ({ data: { user } }) => {
   if (!user) return;
   try { enterDashboard(await loadProfile(user)); } catch (_) { /* O setup ainda pode estar pendente. */ }
