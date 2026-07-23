@@ -30,7 +30,7 @@ function enterDashboard(user) {
   closeAuth();
   const dashboard = document.createElement('section');
   dashboard.className = `dashboard ${user.role === 'admin' ? 'is-admin' : ''}`;
-  dashboard.innerHTML = `<header class="dash-head"><a class="brand" href="#inicio"><span class="brand-mark">C</span><span>Conexões<br><em>em Pesquisa</em></span></a><div><span class="role-pill">${user.role === 'admin' ? 'ADMINISTRAÇÃO' : 'PARTICIPANTE'}</span> <button class="text-button" id="logout">Sair</button></div></header><main class="dash-main"><div class="dash-title"><div><p class="eyebrow"><span></span> Área restrita</p><h1>Olá, ${user.name.split(' ')[0]}.</h1><p>Escolha um espaço para continuar sua jornada na plataforma.</p></div></div><div class="dash-grid"><article class="dash-card"><span>01 · EM BREVE</span><h3>Meu percurso</h3><p>Atividades, registros e contribuições vinculadas ao seu perfil.</p></article><article class="dash-card"><span>02 · EM BREVE</span><h3>Acervo da pesquisa</h3><p>Materiais, documentos e referências disponíveis à comunidade.</p></article><article class="dash-card"><span>03 · EM BREVE</span><h3>Participação</h3><p>Consultas, fóruns e oportunidades de colaboração.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Usuários</h3><p>Convites, permissões e acompanhamento dos perfis cadastrados.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Conteúdos</h3><p>Publique e organize os materiais de cada módulo.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Indicadores</h3><p>Visualize o uso da plataforma e os resultados do projeto.</p></article></div></main></section>`;
+  dashboard.innerHTML = `<header class="dash-head"><a class="brand" href="#inicio"><span class="brand-mark">TS</span><span>Timber<br><em>Structures</em></span></a><div><span class="role-pill">${user.role === 'admin' ? 'ADMINISTRAÇÃO' : 'PARTICIPANTE'}</span> <button class="text-button" id="logout">Sair</button></div></header><main class="dash-main"><div class="dash-title"><div><p class="eyebrow"><span></span> Área restrita</p><h1>Olá, ${user.name.split(' ')[0]}.</h1><p>Escolha um módulo para continuar seu trabalho na plataforma.</p></div></div><div class="dash-grid"><article class="dash-card"><span>01 · EM BREVE</span><h3>Meus projetos</h3><p>Projetos, modelos e documentos vinculados ao seu perfil.</p></article><article class="dash-card"><span>02 · EM BREVE</span><h3>Biblioteca técnica</h3><p>Normas, tabelas, referências e especificações disponíveis.</p></article><article class="dash-card"><span>03 · EM BREVE</span><h3>Colaboração</h3><p>Revisões, aprovações e compartilhamento com a equipe.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Usuários</h3><p>Convites, permissões e acompanhamento dos perfis cadastrados.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Conteúdos</h3><p>Publique e organize os materiais de cada módulo.</p></article><article class="dash-card admin-only"><span>ADMIN · GESTÃO</span><h3>Indicadores</h3><p>Visualize o uso da plataforma e os resultados do projeto.</p></article></div></div></main></section>`;
   document.body.append(dashboard);
   $('#logout').addEventListener('click', async () => { await client.auth.signOut(); signedInUser = null; dashboard.remove(); });
 }
@@ -56,12 +56,14 @@ loginForm.addEventListener('submit', async event => {
 });
 document.querySelectorAll('[data-module]').forEach(button => button.addEventListener('click', () => signedInUser ? enterDashboard(signedInUser) : openAuth('login')));
 
-document.getElementById('forgot-password').addEventListener('click', async (event) => {
+const forgotLink = document.getElementById('forgot-password');
+let cooldownTimer = null;
 
+forgotLink.addEventListener('click', async (event) => {
     event.preventDefault();
+    if (cooldownTimer) return;
 
     const email = loginForm.email.value.trim();
-
     if (!email) {
         message.textContent = 'Informe seu e-mail para recuperar a senha.';
         return;
@@ -73,11 +75,29 @@ document.getElementById('forgot-password').addEventListener('click', async (even
 
     if (error) {
         message.textContent = error.message;
-    } else {
-        message.textContent = 'Enviamos um link para redefinir sua senha.';
+        return;
     }
+
+    let seconds = 60;
+    forgotLink.style.pointerEvents = 'none';
+    forgotLink.style.opacity = '.5';
+    message.textContent = `Enviamos um link para redefinir sua senha. Reenvio disponível em ${seconds}s`;
+
+    cooldownTimer = setInterval(() => {
+        seconds--;
+        message.textContent = `Enviamos um link para redefinir sua senha. Reenvio disponível em ${seconds}s`;
+        forgotLink.textContent = `Reenviar (${seconds}s)`;
+
+        if (seconds <= 0) {
+            clearInterval(cooldownTimer);
+            cooldownTimer = null;
+            forgotLink.style.pointerEvents = '';
+            forgotLink.style.opacity = '';
+            forgotLink.textContent = 'Esqueceu sua senha?';
+            message.textContent = '';
+        }
+    }, 1000);
 });
-E no styles.css, deixe o li
 
 client.auth.getUser().then(async ({ data: { user } }) => {
   if (!user) return;
